@@ -1,0 +1,48 @@
+# 1. 基础配置
+HOSTARCH:=i386
+ARCHDIR:=arch/$(HOSTARCH)
+
+# 编译器设置 (假设你已经配置好了 i686-elf-gcc)
+CC:=i686-elf-gcc
+CXX:=i686-elf-g++
+AS = i686-elf-as
+
+# 关键编译参数
+# -ffreestanding: 裸机环境，无标准库
+# -Iinclude: 告诉编译器，头文件去 kernel/include 目录找，别去系统里找
+CFLAGS:=-O2 -g -ffreestanding -Wall -Wextra -Iinclude
+CXXFLAGS:=$(CFLAGS) -fno-exceptions -fno-rtti # C++需要禁用异常和RTTI
+LDFLAGS:=-ffreestanding -O2 -nostdlib
+
+# 2. 引入架构特有的零件清单
+# 这会导入变量 $(KERNEL_ARCH_OBJS)
+include $(ARCHDIR)/make.config
+
+# 3. 合并所有零件
+# 所有的 .o 文件 = 架构相关的 + 内核核心的
+KERNEL_OBJS=\
+$(KERNEL_ARCH_OBJS) \
+kernel/kernel.o \
+
+# 4. 构建规则
+
+# 目标：最终的内核文件
+myos.kernel: $(KERNEL_OBJS) $(ARCHDIR)/linker.ld
+	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(LDFLAGS) $(KERNEL_OBJS) -lgcc
+
+# 自动推导规则：如何从 .c 变成 .o
+%.o: %.c
+	$(CC) -MD -c $< -o $@ -std=gnu11 $(CFLAGS)
+
+# 自动推导规则：如何从 .cpp 变成 .o
+%.o: %.cpp
+	$(CXX) -MD -c $< -o $@ -std=gnu++11 $(CXXFLAGS)
+
+# 自动推导规则：如何从 .S 变成 .o
+%.o: %.s
+	$(AS) --32 -o $@ $<
+# 清理
+clean:
+	rm -f myos.kernel
+	rm -f $(KERNEL_OBJS)
+	rm -f $(KERNEL_OBJS:.o=.d)
