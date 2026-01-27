@@ -1,4 +1,7 @@
 #!/bin/bash
+cd kernel
+make
+cd ..
 # 复制内核
 cp kernel/myos.kernel isodir/boot/myos.bin
 
