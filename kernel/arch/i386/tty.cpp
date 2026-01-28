@@ -71,7 +71,7 @@ void terminal_fill_rect(int x, int y, int width, int height, uint32_t color) {
 void terminal_write(const char* data, size_t size) {
 	// todo...
     for (size_t i = 0; i < size; i++) {
-        terminal_draw_char(24, terminal_y, data[i], white);
+        terminal_draw_char(24, terminal_y, get_font_bitmap(data[i]), white);
         terminal_y += 8;
     }
 }

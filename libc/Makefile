@@ -35,6 +35,9 @@ libk.a: $(LIBK_OBJS)
 install-headers:
 	cp -R --preserve=timestamps include/. $(SYSROOT)/usr/include/.
 
+install-libc:
+	cp -R --preserve=timestamps $(BINARIES) $(SYSROOT)/usr/lib/$(BINARIES)
+
 clean:
 	rm -f $(LIBK_OBJS)
 	rm -f $(LIBK_OBJS:.o=.d)

@@ -9,8 +9,7 @@ AS = i686-elf-as
 
 # 关键编译参数
 # -ffreestanding: 裸机环境，无标准库
-# -Iinclude: 告诉编译器，头文件去 kernel/include 目录找，别去系统里找
-CFLAGS:=-O2 -g -ffreestanding -Wall -Wextra -Iinclude
+CFLAGS:=-O2 -g -ffreestanding -Wall -Wextra --sysroot=$(SYSROOT) -isystem $(SYSROOT)/usr/include
 CXXFLAGS:=$(CFLAGS) -fno-exceptions -fno-rtti # C++需要禁用异常和RTTI
 LDFLAGS:=-ffreestanding -O2 -nostdlib
 
@@ -28,7 +27,7 @@ kernel/kernel.o \
 
 # 目标：最终的内核文件
 myos.kernel: $(KERNEL_OBJS) $(ARCHDIR)/linker.ld
-	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(LDFLAGS) $(KERNEL_OBJS) -lgcc
+	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(LDFLAGS) $(KERNEL_OBJS) -L$(SYSROOT)/usr/lib -lk -lgcc
 
 # 自动推导规则：如何从 .c 变成 .o
 %.o: %.c

@@ -1,4 +1,5 @@
 #!/bin/bash
+. build_libc.sh
 cd kernel
 make
 cd ..
