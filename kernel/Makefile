@@ -26,7 +26,7 @@ kernel/kernel.o \
 # 4. 构建规则
 
 # 目标：最终的内核文件
-myos.kernel: $(KERNEL_OBJS) $(ARCHDIR)/linker.ld
+lolios.kernel: $(KERNEL_OBJS) $(ARCHDIR)/linker.ld
 	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(LDFLAGS) $(KERNEL_OBJS) -L$(SYSROOT)/usr/lib -lk -lgcc
 
 # 自动推导规则：如何从 .c 变成 .o
@@ -46,6 +46,6 @@ install-headers:
 
 # 清理
 clean:
-	rm -f myos.kernel
+	rm -f lolios.kernel
 	rm -f $(KERNEL_OBJS)
 	rm -f $(KERNEL_OBJS:.o=.d)
