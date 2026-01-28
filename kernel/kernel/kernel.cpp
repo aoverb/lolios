@@ -14,5 +14,5 @@ extern uint8_t* get_font_bitmap(char c);
 
 extern "C" void kernel_main(multiboot_info_t* mbi) {
     terminal_initialize(mbi);
-    printf("Hello world");
+    printf("Hello World");
 }

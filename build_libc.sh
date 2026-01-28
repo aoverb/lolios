@@ -7,5 +7,5 @@ cd kernel
 make install-headers
 cd ..
 cd libc
-make install-headers clean all install-libc
+make install-headers all install-libc
 cd ..

@@ -8,7 +8,7 @@ static uint32_t* fb_addr;
 static uint32_t fb_pitch;
 static uint32_t fb_bpp;
 
-static int terminal_y;
+static int terminal_x;
 
 static const uint32_t white = 0x00FFFFFF;
 
@@ -20,6 +20,7 @@ static uint8_t font_o[] = {0x00, 0x3C, 0x42, 0x42, 0x42, 0x3C, 0x00, 0x00};
 static uint8_t font_W[] = {0xC3, 0xC3, 0xC3, 0xDB, 0xFF, 0xC3, 0x00, 0x00};
 static uint8_t font_r[] = {0x00, 0xAE, 0x66, 0x60, 0x60, 0xF0, 0x00, 0x00};
 static uint8_t font_d[] = {0x06, 0x06, 0x3E, 0x46, 0x46, 0x3E, 0x00, 0x00};
+static uint8_t font_space[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 // 为了方便外部调用，我们临时把这些暴露出去（或者你可以在这里写个查找函数）
 // 在正规 OS 中，这应该是一个完整的 ASCII 表
@@ -32,7 +33,8 @@ uint8_t* get_font_bitmap(char c) {
         case 'W': return font_W;
         case 'r': return font_r;
         case 'd': return font_d;
-        default: return font_o; // 默认
+        case ' ': return font_space;
+        default: return font_space; // 默认
     }
 }
 
@@ -71,7 +73,7 @@ void terminal_fill_rect(int x, int y, int width, int height, uint32_t color) {
 void terminal_write(const char* data, size_t size) {
 	// todo...
     for (size_t i = 0; i < size; i++) {
-        terminal_draw_char(24, terminal_y, get_font_bitmap(data[i]), white);
-        terminal_y += 8;
+        terminal_draw_char(terminal_x, 24, get_font_bitmap(data[i]), white);
+        terminal_x += 8;
     }
 }
