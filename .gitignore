@@ -3,4 +3,5 @@
 *.o
 *.bin
 *.iso
+*.a
 ./isodir

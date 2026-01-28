@@ -21,13 +21,13 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
 
     // 3. 业务逻辑：打印字符
     // 现在的代码读起来更像自然语言了
-    terminal_draw_char(100, 100, get_font_bitmap('H'), white);
+    terminal_draw_char(100, 100, get_font_bitmap('H'), green);
     terminal_draw_char(108, 100, get_font_bitmap('e'), white);
     terminal_draw_char(116, 100, get_font_bitmap('l'), white);
     terminal_draw_char(124, 100, get_font_bitmap('l'), white);
     terminal_draw_char(132, 100, get_font_bitmap('o'), white);
     
-    terminal_draw_char(148, 100, get_font_bitmap('W'), white);
+    terminal_draw_char(148, 100, get_font_bitmap('W'), green);
     terminal_draw_char(156, 100, get_font_bitmap('o'), white);
     terminal_draw_char(164, 100, get_font_bitmap('r'), white);
     terminal_draw_char(172, 100, get_font_bitmap('l'), white);

@@ -1,11 +1,16 @@
 /* kernel/arch/i386/tty.cpp */
 #include <kernel/tty.h>
+#include <boot/multiboot.h>
 #include <stddef.h>
 
 /* 全局变量：显卡驱动私有，不需要 extern 给别人看 */
 static uint32_t* fb_addr;
 static uint32_t fb_pitch;
 static uint32_t fb_bpp;
+
+static int terminal_y;
+
+static const uint32_t white = 0x00FFFFFF;
 
 /* 字体数据 (私有数据) */
 static uint8_t font_H[] = {0xC3, 0xC3, 0xC3, 0xFF, 0xC3, 0xC3, 0xC3, 0x00};
@@ -60,5 +65,13 @@ void terminal_fill_rect(int x, int y, int width, int height, uint32_t color) {
         for(int j = x; j < x + width; j++) {
             terminal_putpixel(j, i, color);
         }
+    }
+}
+
+void terminal_write(const char* data, size_t size) {
+	// todo...
+    for (size_t i = 0; i < size; i++) {
+        terminal_draw_char(24, terminal_y, data[i], white);
+        terminal_y += 8;
     }
 }
