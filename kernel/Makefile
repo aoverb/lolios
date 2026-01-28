@@ -41,6 +41,10 @@ myos.kernel: $(KERNEL_OBJS) $(ARCHDIR)/linker.ld
 # 自动推导规则：如何从 .S 变成 .o
 %.o: %.s
 	$(AS) --32 -o $@ $<
+
+install-headers:
+	cp -R --preserve=timestamps include/. $(SYSROOT)/usr/include/.
+
 # 清理
 clean:
 	rm -f myos.kernel

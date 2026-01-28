@@ -4,4 +4,5 @@
 *.bin
 *.iso
 *.a
-./isodir
+/isodir
+/SYSROOT
