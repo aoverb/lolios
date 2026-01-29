@@ -2,6 +2,9 @@
 #define _ARCH_I386_IDT_H
 #include <stdint.h>
 
+extern "C" void isr0();
+extern "C" void isr6();
+
 struct idt_entry_struct {
     uint16_t offset_low;          // 中断处理函数地址的 (0-15位)
     uint16_t selector;            // 目标代码段选择子 (在GDT中的索引，也就是0x08)
@@ -21,11 +24,18 @@ struct idtr_descriptor {
     uint32_t base;
 } __attribute__((packed));
 
+struct registers {
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // pusha 压入
+    uint32_t int_no, err_code;                       // 我们手动压入
+    uint32_t eip, cs, eflags, useresp, ss;           // CPU 自动压入
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void idt_init();
+void inner_interrupt_handler(registers* regs);
 
 #ifdef __cplusplus
 }

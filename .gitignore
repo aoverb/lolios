@@ -4,5 +4,6 @@
 *.bin
 *.iso
 *.a
+*.log
 /isodir
 /SYSROOT
