@@ -8,9 +8,13 @@
 static uint32_t* fb_addr;
 static uint32_t fb_pitch;
 static uint32_t fb_bpp;
+static uint32_t fb_width;   // 屏幕宽度（像素）
+static uint32_t fb_height;  // 屏幕高度（像素）
+static uint32_t terminal_cols;  // 字符列数
+static uint32_t terminal_rows;  // 字符行数
 
-static int terminal_row = 0;
-static int terminal_col = 0;
+static uint32_t terminal_row = 0;
+static uint32_t terminal_col = 0;
 
 static const uint32_t white = 0x00FFFFFF;
 
@@ -19,6 +23,14 @@ void terminal_initialize(multiboot_info_t* mbi) {
     fb_addr = (uint32_t*)(uintptr_t)mbi->framebuffer_addr;
     fb_pitch = mbi->framebuffer_pitch;
     fb_bpp = mbi->framebuffer_bpp;
+
+    /* 从 multiboot 获取分辨率 */
+    fb_width = mbi->framebuffer_width;
+    fb_height = mbi->framebuffer_height;
+    
+    /* 计算字符行列数 */
+    terminal_cols = fb_width / 8;
+    terminal_rows = fb_height / 16;
 }
 
 void terminal_putpixel(int x, int y, uint32_t color) {
@@ -45,15 +57,26 @@ void terminal_fill_rect(int x, int y, int width, int height, uint32_t color) {
     }
 }
 
+void terminal_roll() {
+    return;
+}
+
 void terminal_write(const char* data, size_t size) {
     for (size_t i = 0; i < size; i++) {
         if (data[i] == '\n') {
-            ++terminal_col;
-            terminal_row = 0;
+            ++terminal_row;
+            terminal_col = 0;
             continue;
+        }
+        if (terminal_col >= terminal_cols) {
+            ++terminal_row;
+            terminal_col = 0;
+        }
+        if (terminal_row >= terminal_rows) {
+            terminal_roll();
         }
         unsigned char c = (unsigned char)data[i];
         const uint8_t* glyph = font_8x16[c];
-        terminal_draw_char(terminal_row++ * 8, terminal_col * 16, glyph, white);
+        terminal_draw_char(terminal_col++ * 8, terminal_row * 16, glyph, white);
     }
 }
