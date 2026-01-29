@@ -5,6 +5,7 @@
 #include <boot/multiboot.h>
 #include <stdio.h>
 #include <kernel/tty.h>
+#include <kernel/hal.h>
 
 void print_rumia() {
 #pragma GCC diagnostic push
@@ -43,11 +44,16 @@ void print_info() {
     printf("%X * %X = %X\n", 15, 15, 15 * 15);
     printf("%x * %x = %x\n", 545, 234, 545 * 234);
     printf("Hello %s, this is %s, I'm %d years old!\n", "aoverb", "alice", 114514);
+    // printf("1 / 0 = %d\n", 1 / 0);
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbi) {
     terminal_initialize(mbi);
     print_rumia();
+
+    printf("HAL initializing...");
+    hal_init();
+    printf("OK\n");
+
     print_info();
-    printf("A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog.");
 }
