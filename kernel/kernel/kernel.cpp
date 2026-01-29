@@ -7,6 +7,8 @@
 #include <kernel/tty.h>
 
 void print_rumia() {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
     printf("-------------------------------------------------------------------------------\n");
     printf("|        :*@@@@@@@%@@*@@@@@@@@@%@@@@@@%*-  ..    #%  :                        |\n");
     printf("|       :*%@@@@@@*@@%=@@@@@@@@@+@@@@@@@@:       .%*  :                        |\n");
@@ -30,11 +32,12 @@ void print_rumia() {
     printf("|         .-*+#*@@@#=   .- .:     ..:.:-... .                                 |\n");
     printf("|          .-===++:..              :.                                         |\n");
     printf("-------------------------------------------------------------------------------\n\n");
+#pragma GCC diagnostic pop
 }
 
 void print_info() {
     printf("LoliOS initializing...\n");
-    printf("%d + %d = %d\n", 1, 1, 1 + 1);
+    printf("%d + %d = %d\n", 1, 1, 2);
     printf("%d * %d = %d\n", -512, 32, -512 * 32);
     printf("%x + %x = %x\n", 1, 1, 1 + 1);
     printf("%X * %X = %X\n", 15, 15, 15 * 15);
@@ -47,5 +50,4 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
     print_rumia();
     print_info();
     printf("A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog. A quick brown fox jumps over the lazy dog.");
-
 }
