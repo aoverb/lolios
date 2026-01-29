@@ -17,7 +17,7 @@ static uint32_t terminal_rows;  // 字符行数
 static uint32_t terminal_row = 0;
 static uint32_t terminal_col = 0;
 
-static const uint32_t white = 0x00FFFFFF;
+static uint32_t terminal_color = 0x00FFFFFF;
 
 /* framebuffer helpers (unchanged) */
 void terminal_initialize(multiboot_info_t* mbi) {
@@ -32,6 +32,10 @@ void terminal_initialize(multiboot_info_t* mbi) {
     /* 计算字符行列数 */
     terminal_cols = fb_width / FONT_WIDTH;
     terminal_rows = fb_height / FONT_HEIGHT;
+}
+
+void terminal_setcolor(uint32_t color) {
+    terminal_color = color;
 }
 
 void terminal_putpixel(int x, int y, uint32_t color) {
@@ -93,6 +97,6 @@ void terminal_write(const char* data, size_t size) {
         }
         unsigned char c = (unsigned char)data[i];
         const uint8_t* glyph = font_8x16[c];
-        terminal_draw_char(terminal_col++ * FONT_WIDTH, terminal_row * FONT_HEIGHT, glyph, white);
+        terminal_draw_char(terminal_col++ * FONT_WIDTH, terminal_row * FONT_HEIGHT, glyph, terminal_color);
     }
 }

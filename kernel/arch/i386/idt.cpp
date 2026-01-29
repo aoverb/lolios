@@ -16,6 +16,7 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t dpl) {
 }
 
 void inner_interrupt_handler(registers* regs) {
+    set_color(0x00FF0000);
     printf("int: %d\n", regs->int_no);
     printf("An critical error has occurred: %d\n", regs->err_code);
     for (;;) {

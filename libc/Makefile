@@ -7,7 +7,8 @@ stdio/putchar.o \
 stdio/puts.o \
 string/strlen.o \
 string/memcpy.o \
-string/memset.o
+string/memset.o \
+stdio/setcolor.o
 
 SYSROOT?=
 
