@@ -1,6 +1,7 @@
 /* kernel/arch/i386/tty.cpp */
 #include <kernel/tty.h>
 #include <kernel/font.h>
+#include <string.h>
 #include <boot/multiboot.h>
 #include <stddef.h>
 #include <stdint.h> // for uint8_t etc.
@@ -29,8 +30,8 @@ void terminal_initialize(multiboot_info_t* mbi) {
     fb_height = mbi->framebuffer_height;
     
     /* 计算字符行列数 */
-    terminal_cols = fb_width / 8;
-    terminal_rows = fb_height / 16;
+    terminal_cols = fb_width / FONT_WIDTH;
+    terminal_rows = fb_height / FONT_HEIGHT;
 }
 
 void terminal_putpixel(int x, int y, uint32_t color) {
@@ -40,8 +41,8 @@ void terminal_putpixel(int x, int y, uint32_t color) {
 
 void terminal_draw_char(int x, int y, const uint8_t* font_char, uint32_t color) {
     // 控制台绘制字体的逻辑不应该依赖于字体的具体实现！需要重构。但是现在只是用来简单输出字符，刚刚好够用。
-    for (int row = 0; row < 16; row++) {
-        for (int col = 0; col < 8; col++) {
+    for (int row = 0; row < FONT_HEIGHT; row++) {
+        for (int col = 0; col < FONT_WIDTH; col++) {
             if ((font_char[row] & (0x80 >> col))) {
                 terminal_putpixel(x + col, y + row, color);
             }
@@ -57,8 +58,23 @@ void terminal_fill_rect(int x, int y, int width, int height, uint32_t color) {
     }
 }
 
-void terminal_roll() {
-    return;
+void terminal_scroll() {
+    size_t line_size = fb_pitch;
+    
+    for (uint32_t row = 1; row < terminal_rows; row++) {
+        uint8_t* src = (uint8_t*)fb_addr + row * FONT_HEIGHT * line_size;
+        uint8_t* dst = (uint8_t*)fb_addr + (row - 1) * FONT_HEIGHT * line_size;
+        
+        for (int i = 0; i < FONT_HEIGHT; i++) {
+            memcpy(dst + i * line_size, src + i * line_size, FONT_HEIGHT * line_size);
+        }
+    }
+    
+    // 清空最后一行
+    terminal_fill_rect(0, (terminal_rows - 1) * FONT_HEIGHT, 
+                      fb_width, FONT_HEIGHT, 0x00000000);
+    
+    terminal_row = terminal_rows - 1;
 }
 
 void terminal_write(const char* data, size_t size) {
@@ -73,10 +89,10 @@ void terminal_write(const char* data, size_t size) {
             terminal_col = 0;
         }
         if (terminal_row >= terminal_rows) {
-            terminal_roll();
+            terminal_scroll();
         }
         unsigned char c = (unsigned char)data[i];
         const uint8_t* glyph = font_8x16[c];
-        terminal_draw_char(terminal_col++ * 8, terminal_row * 16, glyph, white);
+        terminal_draw_char(terminal_col++ * FONT_WIDTH, terminal_row * FONT_HEIGHT, glyph, white);
     }
 }

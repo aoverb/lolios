@@ -1,3 +1,6 @@
+static const uint8_t FONT_HEIGHT = 16;
+static const uint8_t FONT_WIDTH = 8;
+
 /* 完整的 ASCII 0-127 字体数据 (8x16 点阵) */
 static const uint8_t font_8x16[128][16] = {
     // 0x00 - 0x1F: 控制字符
