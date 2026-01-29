@@ -1,7 +1,12 @@
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 #include <stdio.h>
+
+static const char hex_digits_lower[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+static const char hex_digits_upper[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 static bool print(const char* data, size_t length) {
 	const unsigned char* bytes = (const unsigned char*) data;
@@ -11,8 +16,74 @@ static bool print(const char* data, size_t length) {
 	return true;
 }
 
-int printf(const char* restrict str, ...) {
-    // 忽略格式，先写一个直接输出的简单逻辑
-    print(str, strlen(str));
+void print_int(int num) {
+    if (num < 0) {
+        putchar('-');
+        print_int(-num);
+        return;
+    }
+    if (num >= 10) {
+        print_int(num / 10);
+        putchar('0' + (num % 10));
+        return;
+    }
+    putchar('0' + num);
+    return;
+}
+
+void print_int_hex(uint32_t num, bool islower) {
+    if (num >= 16) {
+        print_int_hex(num / 16, islower);
+        putchar(islower ? hex_digits_lower[num % 16] : hex_digits_upper[num % 16]);
+        return;
+    }
+    putchar(islower ? hex_digits_lower[num % 16] : hex_digits_upper[num % 16]);
+    return;
+}
+
+int printf(const char* restrict format, ...) {
+    va_list args;
+    va_start(args, format);
+    const char* p = format;
+    while (*p != '\0') {
+        if (*p != '%') {
+            putchar(*p);
+            ++p;
+            continue;
+        }
+        ++p;
+        switch (*p) {
+            case 'd': {
+                int num = va_arg(args, int);
+                print_int(num);
+                break;
+            }
+            case 'x': {
+                putchar('0');
+                putchar('x');
+                uint32_t num = va_arg(args, uint32_t);
+                print_int_hex(num, true);
+                break;
+            }
+            case 'X': {
+                putchar('0');
+                putchar('x');
+                uint32_t num = va_arg(args, uint32_t);
+                print_int_hex(num, false);
+                break;
+            }
+            case 's': {
+                char* s = va_arg(args, char*);
+                print(s, strlen(s));
+                break;
+            }
+            default: {
+                putchar('%');
+                putchar(*p);
+            }
+        }
+        ++p;
+    }
+    va_end(args);
     return 0;
 }

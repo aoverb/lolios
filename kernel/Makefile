@@ -25,8 +25,10 @@ kernel/kernel.o \
 
 # 4. 构建规则
 
+LIBK:=$(SYSROOT)/usr/lib/libk.a
+
 # 目标：最终的内核文件
-lolios.kernel: $(KERNEL_OBJS) $(ARCHDIR)/linker.ld
+lolios.kernel: $(KERNEL_OBJS) $(ARCHDIR)/linker.ld $(LIBK)
 	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(LDFLAGS) $(KERNEL_OBJS) -L$(SYSROOT)/usr/lib -lk -lgcc
 
 # 自动推导规则：如何从 .c 变成 .o
