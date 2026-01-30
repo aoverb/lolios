@@ -17,14 +17,15 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t dpl) {
 }
 
 void inner_interrupt_handler(registers* regs) {
-    if (regs->int_no == 0x21) {
-        uint8_t scancode = inb(0x60);
-        printf("%d ", scancode);
+    if ((regs->int_no >= 32 && regs->int_no <= 47)) {
+        if (interrupt_handlers[regs->int_no]) {
+            (interrupt_handlers[regs->int_no])(regs);
+        }
         outb(0x20, 0x20);
         return;
     }
     set_color(0x00FF0000);
-    printf("int: %d\n", regs->int_no);
+    printf("int:  %d\n", regs->int_no);
     printf("An critical error has occurred: %d\n", regs->err_code);
     set_color(0x00FFFFFF);
     return;
@@ -63,7 +64,22 @@ void idt_set_gates() {
     SET_ISR(29);
     SET_ISR(30);
     SET_ISR(31);
+    SET_ISR(32);
     SET_ISR(33);
+    SET_ISR(34);
+    SET_ISR(35);
+    SET_ISR(36);
+    SET_ISR(37);
+    SET_ISR(38);
+    SET_ISR(39);
+    SET_ISR(40);
+    SET_ISR(41);
+    SET_ISR(42);
+    SET_ISR(43);
+    SET_ISR(44);
+    SET_ISR(45);
+    SET_ISR(46);
+    SET_ISR(47);
 }
 
 void idt_init() {

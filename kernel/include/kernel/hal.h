@@ -8,6 +8,7 @@ extern "C" {
 void hal_init();
 
 uint8_t hal_inb(uint16_t port);
+void hal_outb(uint16_t port, uint8_t val);
 
 #ifdef __cplusplus
 }

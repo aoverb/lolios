@@ -7,6 +7,8 @@
 #include <kernel/tty.h>
 #include <kernel/hal.h>
 
+#include <driver/keyboard.h>
+
 void print_rumia() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat"
@@ -44,7 +46,6 @@ void print_info() {
     printf("%X * %X = %X\n", 15, 15, 15 * 15);
     printf("%x * %x = %x\n", 545, 234, 545 * 234);
     printf("Hello %s, this is %s, I'm %d years old!\n", "aoverb", "alice", 114514);
-    asm volatile("int $0x21"); 
     printf("I'm back!");
     while(1);
 }
@@ -55,6 +56,8 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
 
     printf("HAL initializing...");
     hal_init();
+    keyboard_init();
+    asm volatile ("sti");
     printf("OK\n");
 
     print_info();

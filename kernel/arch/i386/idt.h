@@ -1,6 +1,7 @@
 #ifndef _ARCH_I386_IDT_H
 #define _ARCH_I386_IDT_H
 #include <stdint.h>
+#include <kernel/isr.h>
 
 #define SET_ISR(n) \
     idt_set_gate(n, (uint32_t)isr##n, 0x08, 0)
@@ -40,7 +41,22 @@ DEF_ISR(28);
 DEF_ISR(29);
 DEF_ISR(30);
 DEF_ISR(31);
+DEF_ISR(32);
 DEF_ISR(33);
+DEF_ISR(34);
+DEF_ISR(35);
+DEF_ISR(36);
+DEF_ISR(37);
+DEF_ISR(38);
+DEF_ISR(39);
+DEF_ISR(40);
+DEF_ISR(41);
+DEF_ISR(42);
+DEF_ISR(43);
+DEF_ISR(44);
+DEF_ISR(45);
+DEF_ISR(46);
+DEF_ISR(47);
 
 struct idt_entry_struct {
     uint16_t offset_low;          // 中断处理函数地址的 (0-15位)
@@ -60,13 +76,6 @@ struct idtr_descriptor {
     uint16_t limit;
     uint32_t base;
 } __attribute__((packed));
-
-struct registers {
-    uint32_t gs, fs, es, ds;      // 对应 pop %gs ... pop %ds
-    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // pusha 压入
-    uint32_t int_no, err_code;                       // 我们手动压入
-    uint32_t eip, cs, eflags, useresp, ss;           // CPU 自动压入
-};
 
 #ifdef __cplusplus
 extern "C" {

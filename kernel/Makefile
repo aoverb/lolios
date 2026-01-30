@@ -17,11 +17,16 @@ LDFLAGS:=-ffreestanding -O2 -nostdlib
 # 这会导入变量 $(KERNEL_ARCH_OBJS)
 include $(ARCHDIR)/make.config
 
+DRIVER_OBJS=\
+driver/keyboard.o
+
 # 3. 合并所有零件
 # 所有的 .o 文件 = 架构相关的 + 内核核心的
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
+$(DRIVER_OBJS) \
 kernel/kernel.o \
+kernel/isr.o
 
 # 4. 构建规则
 
@@ -51,3 +56,5 @@ clean:
 	rm -f lolios.kernel
 	rm -f $(KERNEL_OBJS)
 	rm -f $(KERNEL_OBJS:.o=.d)
+
+-include $(KERNEL_OBJS:.o=.d)
