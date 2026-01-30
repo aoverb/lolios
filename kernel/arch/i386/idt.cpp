@@ -23,6 +23,7 @@ void inner_interrupt_handler(registers* regs) {
 }
 
 void idt_set_gates() {
+    asm volatile ("cli");
     SET_ISR(0);
     SET_ISR(1);
     SET_ISR(2);
@@ -55,6 +56,7 @@ void idt_set_gates() {
     SET_ISR(29);
     SET_ISR(30);
     SET_ISR(31);
+    asm volatile ("sti");
 }
 
 void idt_init() {
