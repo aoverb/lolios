@@ -6,7 +6,7 @@
 .macro ISR_NOERR n
 .global isr\n
 isr\n:
-    pushl $0\n
+    pushl $0
     pushl $\n
     jmp common_interrupt_handler
 .endm
@@ -90,11 +90,23 @@ ISR_ERR   30
 /* 31 reserved */
 ISR_NOERR 31
 
+ISR_NOERR 33
+
 common_interrupt_handler:
     pusha
+    # 保存段寄存器
+    pushl %ds
+    pushl %es
+    pushl %fs
+    pushl %gs
     pushl %esp
+    
     call inner_interrupt_handler
     addl $4, %esp
+    popl %gs
+    popl %fs
+    popl %es
+    popl %ds
     popa
     addl $8, %esp
     iret

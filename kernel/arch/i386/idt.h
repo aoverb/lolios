@@ -40,6 +40,7 @@ DEF_ISR(28);
 DEF_ISR(29);
 DEF_ISR(30);
 DEF_ISR(31);
+DEF_ISR(33);
 
 struct idt_entry_struct {
     uint16_t offset_low;          // 中断处理函数地址的 (0-15位)
@@ -61,6 +62,7 @@ struct idtr_descriptor {
 } __attribute__((packed));
 
 struct registers {
+    uint32_t gs, fs, es, ds;      // 对应 pop %gs ... pop %ds
     uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // pusha 压入
     uint32_t int_no, err_code;                       // 我们手动压入
     uint32_t eip, cs, eflags, useresp, ss;           // CPU 自动压入

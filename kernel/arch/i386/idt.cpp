@@ -1,4 +1,5 @@
 #include "idt.h"
+#include "io.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -16,14 +17,20 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t dpl) {
 }
 
 void inner_interrupt_handler(registers* regs) {
+    if (regs->int_no == 0x21) {
+        uint8_t scancode = inb(0x60);
+        printf("%d ", scancode);
+        outb(0x20, 0x20);
+        return;
+    }
     set_color(0x00FF0000);
     printf("int: %d\n", regs->int_no);
     printf("An critical error has occurred: %d\n", regs->err_code);
+    set_color(0x00FFFFFF);
     return;
 }
 
 void idt_set_gates() {
-    asm volatile ("cli");
     SET_ISR(0);
     SET_ISR(1);
     SET_ISR(2);
@@ -56,7 +63,7 @@ void idt_set_gates() {
     SET_ISR(29);
     SET_ISR(30);
     SET_ISR(31);
-    asm volatile ("sti");
+    SET_ISR(33);
 }
 
 void idt_init() {
