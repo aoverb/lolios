@@ -19,10 +19,42 @@ void inner_interrupt_handler(registers* regs) {
     set_color(0x00FF0000);
     printf("int: %d\n", regs->int_no);
     printf("An critical error has occurred: %d\n", regs->err_code);
-    for (;;) {
-        asm volatile("hlt");
-    }
     return;
+}
+
+void idt_set_gates() {
+    SET_ISR(0);
+    SET_ISR(1);
+    SET_ISR(2);
+    SET_ISR(3);
+    SET_ISR(4);
+    SET_ISR(5);
+    SET_ISR(6);
+    SET_ISR(7);
+    SET_ISR(8);
+    SET_ISR(9);
+    SET_ISR(10);
+    SET_ISR(11);
+    SET_ISR(12);
+    SET_ISR(13);
+    SET_ISR(14);
+    SET_ISR(15);
+    SET_ISR(16);
+    SET_ISR(17);
+    SET_ISR(18);
+    SET_ISR(19);
+    SET_ISR(20);
+    SET_ISR(21);
+    SET_ISR(22);
+    SET_ISR(23);
+    SET_ISR(24);
+    SET_ISR(25);
+    SET_ISR(26);
+    SET_ISR(27);
+    SET_ISR(28);
+    SET_ISR(29);
+    SET_ISR(30);
+    SET_ISR(31);
 }
 
 void idt_init() {
@@ -32,8 +64,7 @@ void idt_init() {
     idtr_sel.base = (uint32_t)(&idt_entries);
     idtr_sel.limit = sizeof(idt_entry_struct) * 256 - 1;
 
-    idt_set_gate(0, (uint32_t)(&isr0), 0x08, 0);
-    idt_set_gate(6, (uint32_t)(&isr6), 0x08, 0);
+    idt_set_gates();
 
     asm volatile(
         "lidt %0"
