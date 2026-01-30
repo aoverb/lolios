@@ -13,6 +13,13 @@ void getline(char* buf, uint32_t size) {
 
         char c = keyboard_getchar();
 
+        if (c == '\b') {
+            if (i == 0) continue;
+            --i;
+            printf("\b");
+            continue;
+        }
+
         if (c == '\n') {
             buf[i] = '\0';
             printf("\n");

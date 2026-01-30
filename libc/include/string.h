@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 size_t strlen(const char*);
+int strcmp(const char*, const char*);
 void* memcpy(void* __restrict, const void* __restrict, size_t);
 void* memset(void*, int, size_t);
 

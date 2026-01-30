@@ -4,6 +4,7 @@
 // 引入上面定义的两个头文件
 #include <boot/multiboot.h>
 #include <stdio.h>
+#include <string.h>
 #include <kernel/tty.h>
 #include <kernel/hal.h>
 
@@ -38,14 +39,18 @@ void print_rumia() {
 #pragma GCC diagnostic pop
 }
 
-void print_info() {
-    printf("LoliOS initializing...\n");
-    printf("%d + %d = %d\n", 1, 1, 2);
-    printf("%d * %d = %d\n", -512, 32, -512 * 32);
-    printf("%x + %x = %x\n", 1, 1, 1 + 1);
-    printf("%X * %X = %X\n", 15, 15, 15 * 15);
-    printf("%x * %x = %x\n", 545, 234, 545 * 234);
-    printf("Hello %s, this is %s, I'm %d years old!\n", "aoverb", "alice", 114514);
+void print_rumia_text() {
+    set_color(0xF0B526);
+    printf("Rumi");
+    set_color(0xEB392D);
+    printf("a");
+    set_color(0xFFFFFF);
+}
+
+void print_lolios() {
+    set_color(0xEB9D2F);
+    printf("LoliOS");
+    set_color(0xFFFFFF);
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbi) {
@@ -57,13 +62,27 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
     keyboard_init();
     asm volatile ("sti");
     printf("OK\n");
+    printf("Welcome, aoverb!\n\n");
 
-    print_info();
-
-    char input[64];
+    char input[256];
     while (1) {
-        printf("LoliOS>");
-        getline(input, 64);
+        print_lolios();
+        printf(">");
+        getline(input, 256);
+        if (strcmp(input, "help") == 0) {
+            printf("Hello user!");
+            printf("This is ");
+            print_lolios();
+            printf("!\n");
+            printf("The host here is ");
+            print_rumia_text();
+            printf("! Feel free!\n");
+        } else if (strcmp(input, "rumia") == 0) {
+            print_rumia();
+        } else {
+            print_rumia_text();
+            printf(": Unknown command '%s'!\n", input);
+        }
         printf("\n");
     }
 }

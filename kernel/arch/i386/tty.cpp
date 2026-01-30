@@ -83,6 +83,22 @@ void terminal_scroll() {
 
 void terminal_write(const char* data, size_t size) {
     for (size_t i = 0; i < size; i++) {
+        if (data[i] == '\b') {
+            if (terminal_col == 0 && terminal_row == 0) {
+                return;
+            }
+            if (terminal_col == 0) {
+                --terminal_row;
+                terminal_col = terminal_cols;
+            }
+            --terminal_col;
+            terminal_fill_rect(terminal_col * FONT_WIDTH, 
+                              terminal_row * FONT_HEIGHT, 
+                              FONT_WIDTH, 
+                              FONT_HEIGHT, 
+                              0x00000000);
+            continue;
+        }
         if (data[i] == '\n') {
             ++terminal_row;
             terminal_col = 0;
