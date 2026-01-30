@@ -46,8 +46,6 @@ void print_info() {
     printf("%X * %X = %X\n", 15, 15, 15 * 15);
     printf("%x * %x = %x\n", 545, 234, 545 * 234);
     printf("Hello %s, this is %s, I'm %d years old!\n", "aoverb", "alice", 114514);
-    printf("I'm back!");
-    while(1);
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbi) {
@@ -61,4 +59,11 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
     printf("OK\n");
 
     print_info();
+
+    char input[64];
+    while (1) {
+        printf("LoliOS>");
+        getline(input, 64);
+        printf("\n");
+    }
 }

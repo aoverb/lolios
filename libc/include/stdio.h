@@ -11,6 +11,7 @@ void set_color(uint32_t color);
 int printf(const char* __restrict, ...) __attribute__((format(printf, 1, 2)));
 int putchar(int);
 int puts(const char*);
+void getline(char* buf, uint32_t size);
 
 #ifdef __cplusplus
 }

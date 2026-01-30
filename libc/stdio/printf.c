@@ -77,6 +77,11 @@ int printf(const char* restrict format, ...) {
                 print(s, strlen(s));
                 break;
             }
+            case 'c': {
+                int c = va_arg(args, int);
+                putchar(c);
+                break;
+            }
             default: {
                 putchar('%');
                 putchar(*p);
