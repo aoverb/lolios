@@ -1,34 +1,36 @@
-/* linker.ld */
 ENTRY(_start)
 
 SECTIONS
 {
-	/* 内核从 1MB 处开始 */
 	. = 1M;
+    .boot BLOCK(4K) : ALIGN(4K)
+    {
+        *(.multiboot)
+        *(.scaffold)
+    }
+    /* 内核将加载在 1MB 处 */
+    . += 0xC0000000;
 
-	/* Multiboot 头必须在最前面 */
-	.text BLOCK(4K) : ALIGN(4K)
-	{
-		*(.multiboot)
-		*(.text)
-	}
+    .text ALIGN(4K) : AT(ADDR(.text) - 0xC0000000)
+    {
+        *(.text)
+    }
 
-	/* 只读数据 */
-	.rodata BLOCK(4K) : ALIGN(4K)
-	{
-		*(.rodata)
-	}
+    .rodata ALIGN(4K) : AT(ADDR(.rodata) - 0xC0000000)
+    {
+        *(.rodata)
+    }
 
-	/* 已初始化数据 */
-	.data BLOCK(4K) : ALIGN(4K)
-	{
-		*(.data)
-	}
+    .data ALIGN(4K) : AT(ADDR(.data) - 0xC0000000)
+    {
+        *(.data)
+    }
 
-	/* 未初始化数据和栈 (BSS) */
-	.bss BLOCK(4K) : ALIGN(4K)
-	{
-		*(COMMON)
-		*(.bss)
-	}
+    .bss ALIGN(4K) : AT(ADDR(.bss) - 0xC0000000)
+    {
+        *(COMMON)
+        *(.bss)
+    }
+    
+    _kernel_end = . - 0xC0000000;
 }

@@ -1,4 +1,6 @@
 /* boot.s */
+.section .multiboot, "a"
+
 .set ALIGN,    1<<0
 .set MEMINFO,  1<<1
 .set VIDEOMODE, 1<<2        /* 新增：请求视频模式标志位 */
@@ -26,12 +28,41 @@ stack_bottom:
 .skip 16384
 stack_top:
 
-.section .text
+.section .data
+.align 4096
+page_table:
+    .set i, 0
+    .rept 1024
+        .long (i << 12) | 0x3
+        .set i, i + 1
+    .endr
+
+.section .data
+.align 4096
+page_directory:
+    .long (page_table - 0xC0000000) + 0x3
+    .fill 767, 4, 0
+    .long (page_table - 0xC0000000) + 0x3
+    .fill 255, 4, 0
+
+.section .scaffold
 .global _start
 .type _start, @function
 _start:
-    mov $stack_top, %esp
+    cli
+    movl $(page_directory - 0xC0000000), %eax
+    movl %eax, %cr3
+    movl %cr0, %eax
+    or $0x80000000, %eax
+    movl %eax, %cr0
+    movl $_tokernelmain, %eax
+    jmp *%eax
 
+.section .text
+.global _tokernelmain
+.type _tokernelmain, @function
+_tokernelmain:
+    mov $stack_top, %esp
     /* 关键：将 Multiboot 信息结构的地址 (存在 ebx 中) 压入栈，传给 C++ */
     push %ebx
     

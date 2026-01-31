@@ -56,8 +56,8 @@ void print_lolios() {
 
 extern "C" void kernel_main(multiboot_info_t* mbi) {
     terminal_initialize(mbi);
+    
     print_rumia();
-
     printf("HAL initializing...");
     hal_init();
     keyboard_init();
@@ -65,7 +65,7 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
     asm volatile ("sti");
     printf("OK\n");
     printf("Welcome, aoverb!\n\n");
-
+    printf("The kernel_main lies in %X, sounds great!\n\n", &kernel_main);
     char input[256];
     while (1) {
         print_lolios();

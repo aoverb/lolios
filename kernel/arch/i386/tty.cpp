@@ -20,6 +20,33 @@ static uint32_t terminal_col = 0;
 static uint32_t terminal_color = 0x00FFFFFF;
 
 /* framebuffer helpers (unchanged) */
+
+// 丑陋的stub，以后有了kmalloc和正确的分页机制要去掉
+void map_lfb_hardcore(uint32_t phys_addr, uint32_t size) {
+    // 强制开启 PSE
+    asm volatile(
+        "mov %%cr4, %%eax\n"
+        "or $0x10, %%eax\n"
+        "mov %%eax, %%cr4"
+        : : : "eax"
+    );
+
+    uint32_t pde_index = 832; // 0xD0000000
+    uint32_t num_pages = (size + 0x3FFFFF) / 0x400000;
+    
+    // 我们直接用汇编往内存里写，不经过 C 数组索引，防止指针寻址出错
+    // 这里的 0xC0106000 必须是你 page_directory 的准确虚拟地址
+    uint32_t* pd_ptr = (uint32_t*)0xC0106000; 
+
+    for (uint32_t i = 0; i < num_pages; i++) {
+        uint32_t entry_val = (phys_addr + (i * 0x400000)) | 0x83;
+        pd_ptr[pde_index + i] = entry_val;
+    }
+
+    // 刷新 TLB
+    asm volatile("mov %%cr3, %%eax\n mov %%eax, %%cr3" : : : "eax");
+}
+
 void terminal_initialize(multiboot_info_t* mbi) {
     fb_addr = (uint32_t*)(uintptr_t)mbi->framebuffer_addr;
     fb_pitch = mbi->framebuffer_pitch;
@@ -32,6 +59,12 @@ void terminal_initialize(multiboot_info_t* mbi) {
     /* 计算字符行列数 */
     terminal_cols = fb_width / FONT_WIDTH;
     terminal_rows = fb_height / FONT_HEIGHT;
+
+
+    uint32_t lfb_physical_addr = mbi->framebuffer_addr;
+    uint32_t lfb_size = mbi->framebuffer_width * mbi->framebuffer_height * (mbi->framebuffer_bpp / 8);
+    map_lfb_hardcore(lfb_physical_addr, lfb_size);
+    fb_addr = (uint32_t*)(uintptr_t)0xD0000000; // ...
 }
 
 void terminal_setcolor(uint32_t color) {
@@ -42,6 +75,7 @@ void terminal_putpixel(int x, int y, uint32_t color) {
     uint32_t offset = y * (fb_pitch / 4) + x;
     fb_addr[offset] = color;
 }
+
 
 void terminal_draw_char(int x, int y, const uint8_t* font_char, uint32_t color) {
     // 控制台绘制字体的逻辑不应该依赖于字体的具体实现！需要重构。但是现在只是用来简单输出字符，刚刚好够用。
