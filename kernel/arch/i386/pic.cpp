@@ -10,7 +10,37 @@ void pic_init() {
     outb(0x21, 0x01); // 8086 模式
     outb(0xA1, 0x01);
 
-    // 关键：解除屏蔽。0xFD 是 11111101b，开启 IRQ 1 (键盘)
-    outb(0x21, 0xFD); 
+    // 先屏蔽所有IRQ，由驱动打开
+    outb(0x21, 0xFF); 
     outb(0xA1, 0xFF);
+}
+
+void pic_enable_irq(uint8_t irq) {
+    uint16_t port;
+    uint8_t value;
+
+    if (irq < 8) {
+        port = 0x21;
+    } else {
+        port = 0xA1;
+        irq -= 8;
+    }
+    value = inb(port) & ~(1 << irq);
+    outb(port, value);
+}
+
+// 屏蔽特定 IRQ 线
+void pic_disable_irq(uint8_t irq) {
+    uint16_t port;
+    uint8_t value;
+
+    if (irq < 8) {
+        port = 0x21;
+    } else {
+        port = 0xA1;
+        irq -= 8;
+    }
+
+    value = inb(port) | (1 << irq);
+    outb(port, value);
 }

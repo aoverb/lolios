@@ -18,7 +18,8 @@ LDFLAGS:=-ffreestanding -O2 -nostdlib
 include $(ARCHDIR)/make.config
 
 DRIVER_OBJS=\
-driver/keyboard.o
+driver/keyboard.o \
+driver/pit.o
 
 # 3. 合并所有零件
 # 所有的 .o 文件 = 架构相关的 + 内核核心的

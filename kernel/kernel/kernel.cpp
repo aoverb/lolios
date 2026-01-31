@@ -9,6 +9,7 @@
 #include <kernel/hal.h>
 
 #include <driver/keyboard.h>
+#include <driver/pit.h>
 
 void print_rumia() {
 #pragma GCC diagnostic push
@@ -60,6 +61,7 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
     printf("HAL initializing...");
     hal_init();
     keyboard_init();
+    pit_init();
     asm volatile ("sti");
     printf("OK\n");
     printf("Welcome, aoverb!\n\n");
@@ -79,6 +81,21 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
             printf("! Feel free!\n");
         } else if (strcmp(input, "rumia") == 0) {
             print_rumia();
+        } else if (strcmp(input, "") == 0) {
+            continue;
+        } else if (strcmp(input, "exit") == 0) {
+            print_rumia_text();
+            printf(": Goodbye, aoverb!\n");
+            break;
+        } else if (strcmp(input, "halt") == 0) {
+            printf("HALT!");
+            asm volatile("hlt");
+        } else if (strcmp(input, "tick") == 0) {
+            uint8_t ticks = 0;
+            while (++ticks) {
+                printf("%d ", ticks);
+                pit_sleep(1000);
+            }
         } else {
             print_rumia_text();
             printf(": Unknown command '%s'!\n", input);

@@ -8,6 +8,8 @@ extern "C" {
 #endif
 
 void pic_init();
+void pic_enable_irq(uint8_t irq);
+void pic_disable_irq(uint8_t irq);
 
 #ifdef __cplusplus
 }

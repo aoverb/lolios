@@ -74,6 +74,8 @@ void keyboard_init() {
     while (hal_inb(0x64) & 0x01) {
         hal_inb(0x60); // 读走数据，但不做任何处理，直接丢弃
     }
+
+    hal_enable_irq(1);
 }
 
 void keyboard_flush() {
