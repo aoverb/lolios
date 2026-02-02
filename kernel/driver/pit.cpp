@@ -30,3 +30,7 @@ void pit_sleep(uint32_t ms) {
         asm volatile ("hlt");
     }
 }
+
+uint32_t pit_get_ticks() {
+    return ticks;
+}

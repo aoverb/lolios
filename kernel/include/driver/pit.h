@@ -9,6 +9,7 @@ extern "C" {
 
 void pit_init();
 void pit_sleep(uint32_t);
+uint32_t pit_get_ticks();
 
 #ifdef __cplusplus
 }

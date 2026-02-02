@@ -6,6 +6,8 @@
 #include <stddef.h>
 #include <stdint.h> // for uint8_t etc.
 
+extern uint32_t page_directory;
+
 static uint32_t* fb_addr;
 static uint32_t fb_pitch;
 static uint32_t fb_bpp;
@@ -36,7 +38,7 @@ void map_lfb_hardcore(uint32_t phys_addr, uint32_t size) {
     
     // 我们直接用汇编往内存里写，不经过 C 数组索引，防止指针寻址出错
     // 这里的 0xC0106000 必须是你 page_directory 的准确虚拟地址
-    uint32_t* pd_ptr = (uint32_t*)0xC0106000; 
+    uint32_t* pd_ptr = &page_directory; 
 
     for (uint32_t i = 0; i < num_pages; i++) {
         uint32_t entry_val = (phys_addr + (i * 0x400000)) | 0x83;

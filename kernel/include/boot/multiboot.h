@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+extern uint64_t _kernel_end;
 /* Multiboot 信息结构体 */
 struct multiboot_info_t {
     uint32_t flags;

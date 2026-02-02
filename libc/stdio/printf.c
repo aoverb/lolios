@@ -31,6 +31,16 @@ void print_int(int num) {
     return;
 }
 
+void print_uint64_hex(uint64_t num, bool islower) {
+    if (num >= 16) {
+        print_uint64_hex(num / 16, islower);
+        putchar(islower ? hex_digits_lower[num % 16] : hex_digits_upper[num % 16]);
+        return;
+    }
+    putchar(islower ? hex_digits_lower[num % 16] : hex_digits_upper[num % 16]);
+    return;
+}
+
 void print_int_hex(uint32_t num, bool islower) {
     if (num >= 16) {
         print_int_hex(num / 16, islower);
@@ -80,6 +90,22 @@ int printf(const char* restrict format, ...) {
             case 'c': {
                 int c = va_arg(args, int);
                 putchar(c);
+                break;
+            }
+            case 'l': {
+                ++p;
+                switch (*p) {
+                    case 'u': { // todo: 不规范，但能用，先这么设置
+                        uint64_t num = va_arg(args, uint64_t);
+                        print_uint64_hex(num, true);
+                        break;
+                    }
+                    default: {
+                        putchar('%');
+                        putchar('l');
+                        putchar(*p);
+                    }
+                }
                 break;
             }
             default: {

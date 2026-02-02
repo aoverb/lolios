@@ -7,6 +7,7 @@
 #include <string.h>
 #include <kernel/tty.h>
 #include <kernel/hal.h>
+#include <kernel/mm.h>
 
 #include <driver/keyboard.h>
 #include <driver/pit.h>
@@ -54,10 +55,89 @@ void print_lolios() {
     set_color(0xFFFFFF);
 }
 
+void pmm_prepare(multiboot_info_t* mbi) {
+    uint64_t kernel_begin = 0x100000;
+    uint64_t kernel_end = (uint64_t)(&_kernel_end);
+
+    uint32_t lfb_begin = mbi->framebuffer_addr;
+    uint32_t lfb_end = lfb_begin + mbi->framebuffer_width * mbi->framebuffer_height * (mbi->framebuffer_bpp / 8) - 1;
+
+    printf("_kernel: %lu - %lu\n", kernel_begin, kernel_end);
+    printf("_lfb: %x - %x\n", lfb_begin, lfb_end);
+    
+    pm_list pms;
+    auto pm_add_list = [&] (uint64_t begin, uint64_t end) {
+        constexpr uint64_t mask = (1 << 12) - 1;
+        
+        if (mask & begin) {
+            begin &= ~mask;
+            begin += mask + 1;
+        }
+        if (mask & end) {
+            end &= ~mask;
+            end -= mask + 1;
+        }
+        
+        if (end > 0xFFFFFFFF) end = 0xFFFFFFFF;
+        if (end - begin <= 0) return;
+
+        pms.entries[pms.count].begin = begin;
+        pms.entries[pms.count++].end = end;
+    };
+
+    multiboot_memory_map_t* mmap = (multiboot_memory_map_t*)mbi->mmap_addr;
+
+    pms.count = 0;
+    
+    while((uint32_t)mmap < mbi->mmap_addr + mbi->mmap_length) {
+        if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
+            uint64_t cur_begin = mmap->addr;
+            uint64_t cur_end = mmap->addr + mmap->len - 1;
+            printf("now: %lu - %lu\n", cur_begin, cur_end);
+            if ((kernel_begin <= cur_begin && cur_begin <= kernel_end) || (kernel_begin <= cur_end && cur_end <= kernel_end)) {
+                if ((kernel_begin <= cur_begin && cur_begin <= kernel_end) && (kernel_begin <= cur_end && cur_end <= kernel_end)) {
+                    continue;
+                } else if (kernel_begin <= cur_begin && cur_begin <= kernel_end) {
+                    pm_add_list(kernel_end + 1, cur_end);
+                } else {
+                    pm_add_list(cur_begin, kernel_begin - 1);
+                }
+            } else if ((cur_begin <= kernel_begin && kernel_end >= cur_begin) && (kernel_begin <= cur_end && cur_end >= kernel_end)) {
+                pm_add_list(cur_begin, kernel_begin - 1);
+                pm_add_list(kernel_end + 1, cur_end);
+            } else if ((lfb_begin <= cur_begin && cur_begin <= lfb_end) || (lfb_begin <= cur_end && cur_end <= lfb_end)) {
+                if ((lfb_begin <= cur_begin && cur_begin <= lfb_end) && (lfb_begin <= cur_end && cur_end <= lfb_end)) {
+                    continue;
+                } else if (lfb_begin <= cur_begin && cur_begin <= lfb_end) {
+                    pm_add_list(lfb_end + 1, cur_end);
+                } else {
+                    pm_add_list(cur_begin, lfb_begin - 1);
+                }
+            } else if ((cur_begin <= lfb_begin && lfb_end >= cur_begin) && (lfb_begin <= cur_end && cur_end >= lfb_end)) {
+                pm_add_list(cur_begin, lfb_begin - 1);
+                pm_add_list(lfb_end + 1, cur_end);
+            } else {
+                pm_add_list(cur_begin, cur_end);
+            }
+        }
+        // mmap->size: 根据规范，这个字段存储的是“除了 size 字段本身以外，该条目剩余部分的大小”。
+        // 把size加上就是整个结构体的大小了。Multiboot考虑到未来会在这个结构体的末尾增加新的字段，因此规定要用这种方式去遍历。
+        mmap = (multiboot_memory_map_t*)((uintptr_t)mmap + mmap->size + sizeof(mmap->size));
+    }
+    for (auto i = 0; i < pms.count; i++) {
+        printf("%lu - %lu\n", pms.entries[i].begin, pms.entries[i].end);
+    }
+
+    pmm_init(&pms);
+}
+
 extern "C" void kernel_main(multiboot_info_t* mbi) {
+    pmm_prepare(mbi);
     terminal_initialize(mbi);
     
     print_rumia();
+
+    
     printf("HAL initializing...");
     hal_init();
     keyboard_init();
@@ -67,10 +147,13 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
     printf("Welcome, aoverb!\n\n");
     printf("The kernel_main lies in %X, sounds great!\n\n", &kernel_main);
     char input[256];
+    
     while (1) {
         print_lolios();
+        
         printf(">");
         getline(input, 256);
+        
         if (strcmp(input, "help") == 0) {
             printf("Hello user!");
             printf("This is ");
@@ -90,6 +173,8 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
         } else if (strcmp(input, "halt") == 0) {
             printf("HALT!");
             asm volatile("hlt");
+        } else if (strcmp(input, "time") == 0) {
+            printf("%d", pit_get_ticks());
         } else if (strcmp(input, "tick") == 0) {
             uint8_t ticks = 0;
             while (++ticks) {
@@ -100,6 +185,7 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
             print_rumia_text();
             printf(": Unknown command '%s'!\n", input);
         }
+        
         printf("\n");
     }
 }

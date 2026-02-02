@@ -1,6 +1,8 @@
 /* boot.s */
 .section .multiboot, "a"
 
+.global page_directory
+
 .set ALIGN,    1<<0
 .set MEMINFO,  1<<1
 .set VIDEOMODE, 1<<2        /* 新增：请求视频模式标志位 */
@@ -25,25 +27,44 @@
 .section .bss
 .align 16
 stack_bottom:
-.skip 16384
+.skip 32768
 stack_top:
 
 .section .data
 .align 4096
-page_table:
+# 创建足够的页表来映射至少 8MB（或更多）
+page_table_low:
     .set i, 0
     .rept 1024
         .long (i << 12) | 0x3
         .set i, i + 1
     .endr
 
-.section .data
+page_table_high:
+    .set i, 1024
+    .rept 1024
+        .long (i << 12) | 0x3
+        .set i, i + 1
+    .endr
+
 .align 4096
 page_directory:
-    .long (page_table - 0xC0000000) + 0x3
-    .fill 767, 4, 0
-    .long (page_table - 0xC0000000) + 0x3
-    .fill 255, 4, 0
+    # 恒等映射：0-4MB
+    .long (page_table_low - 0xC0000000) + 0x3
+    
+    # 映射 4MB-8MB（如果需要）
+    .long (page_table_high - 0xC0000000) + 0x3
+    
+    # 填充中间的空白
+    .fill 766, 4, 0
+    
+    # 高半区映射：0xC0000000-0xC0400000 (0-4MB)
+    .long (page_table_low - 0xC0000000) + 0x3
+    
+    # 高半区映射：0xC0400000-0xC0800000 (4MB-8MB)
+    .long (page_table_high - 0xC0000000) + 0x3
+    
+    .fill 254, 4, 0
 
 .section .scaffold
 .global _start
