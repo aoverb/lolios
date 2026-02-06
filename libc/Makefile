@@ -14,7 +14,7 @@ stdio/getline.o
 
 SYSROOT?=
 
-CFLAGS?=-O2 -g
+CFLAGS?=-O0 -g
 CPPFLAGS?=
 
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra

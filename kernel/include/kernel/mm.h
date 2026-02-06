@@ -13,11 +13,12 @@ struct multiboot_mmap_entry
 #define MULTIBOOT_MEMORY_BADRAM                 5
   uint32_t type;
 } __attribute__((packed));
+#define MAX_ORDER 12
 
 typedef struct multiboot_mmap_entry multiboot_memory_map_t;
 
 typedef struct pm_entry {
-    uint64_t begin, end;
+    uint32_t begin, end;
 } pm_entry;
 
 typedef struct pm_list {
@@ -25,6 +26,26 @@ typedef struct pm_list {
     uint32_t count;
 } pm_list;
 
+typedef struct page_frame page_frame;
+
+struct page_frame {
+    page_frame *prev, *next;
+    uint8_t order;
+    uint8_t allocated;
+};
+
+page_frame* all_pages;
+
+page_frame* free_area[MAX_ORDER];
+
+uint32_t page_limit;
+
 void pmm_init(pm_list* pms);
+
+void* pmm_alloc(uint32_t size);
+
+void pmm_free(void* addr);
+
+void pmm_probe();
 
 #endif

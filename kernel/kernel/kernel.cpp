@@ -61,9 +61,6 @@ void pmm_prepare(multiboot_info_t* mbi) {
 
     uint32_t lfb_begin = mbi->framebuffer_addr;
     uint32_t lfb_end = lfb_begin + mbi->framebuffer_width * mbi->framebuffer_height * (mbi->framebuffer_bpp / 8) - 1;
-
-    printf("_kernel: %lu - %lu\n", kernel_begin, kernel_end);
-    printf("_lfb: %x - %x\n", lfb_begin, lfb_end);
     
     pm_list pms;
     auto pm_add_list = [&] (uint64_t begin, uint64_t end) {
@@ -80,9 +77,9 @@ void pmm_prepare(multiboot_info_t* mbi) {
         
         if (end > 0xFFFFFFFF) end = 0xFFFFFFFF;
         if (end - begin <= 0) return;
-
-        pms.entries[pms.count].begin = begin;
-        pms.entries[pms.count++].end = end;
+        printf("free mem: [%lu, %lu]\n", begin, end);
+        pms.entries[pms.count].begin = static_cast<uint32_t>(begin);
+        pms.entries[pms.count++].end = static_cast<uint32_t>(end);
     };
 
     multiboot_memory_map_t* mmap = (multiboot_memory_map_t*)mbi->mmap_addr;
@@ -93,7 +90,6 @@ void pmm_prepare(multiboot_info_t* mbi) {
         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
             uint64_t cur_begin = mmap->addr;
             uint64_t cur_end = mmap->addr + mmap->len - 1;
-            printf("now: %lu - %lu\n", cur_begin, cur_end);
             if ((kernel_begin <= cur_begin && cur_begin <= kernel_end) || (kernel_begin <= cur_end && cur_end <= kernel_end)) {
                 if ((kernel_begin <= cur_begin && cur_begin <= kernel_end) && (kernel_begin <= cur_end && cur_end <= kernel_end)) {
                     continue;
@@ -124,15 +120,12 @@ void pmm_prepare(multiboot_info_t* mbi) {
         // 把size加上就是整个结构体的大小了。Multiboot考虑到未来会在这个结构体的末尾增加新的字段，因此规定要用这种方式去遍历。
         mmap = (multiboot_memory_map_t*)((uintptr_t)mmap + mmap->size + sizeof(mmap->size));
     }
-    for (auto i = 0; i < pms.count; i++) {
-        printf("%lu - %lu\n", pms.entries[i].begin, pms.entries[i].end);
-    }
 
     pmm_init(&pms);
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbi) {
-    pmm_prepare(mbi);
+    
     terminal_initialize(mbi);
     
     print_rumia();
@@ -147,7 +140,7 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
     printf("Welcome, aoverb!\n\n");
     printf("The kernel_main lies in %X, sounds great!\n\n", &kernel_main);
     char input[256];
-    
+        pmm_prepare(mbi);
     while (1) {
         print_lolios();
         
@@ -170,7 +163,14 @@ extern "C" void kernel_main(multiboot_info_t* mbi) {
             print_rumia_text();
             printf(": Goodbye, aoverb!\n");
             break;
-        } else if (strcmp(input, "halt") == 0) {
+        } else if (strcmp(input, "test") == 0) {
+            uint32_t x = 0;
+            void* m = pmm_alloc(4096);
+            pmm_free(m);
+            printf("%x", m);
+        } else if (strcmp(input, "probe") == 0) {
+            pmm_probe();
+        }else if (strcmp(input, "halt") == 0) {
             printf("HALT!");
             asm volatile("hlt");
         } else if (strcmp(input, "time") == 0) {
